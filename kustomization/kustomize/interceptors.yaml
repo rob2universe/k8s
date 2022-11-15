@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+spec:
+  template:
+    spec:
+      containers:
+        - name: echoserver # container to be change 
+          volumeMounts:
+            - mountPath: /interceptors # Mount the directory where the Java agent will be available
+              name: interceptors
+          # env:
+          #   - name: JAVA_OPTIONS # Instruct the JVM to load the Java agent
+          #     value: -MYOPTS:ifNeeded
+      initContainers: # init container adding the file to the shared volume
+        - name: init-interceptors
+          image: alpine
+          volumeMounts:
+            - mountPath: /interceptors
+              name: interceptors
+      volumes: # Create the shared volume
+        - name: interceptors
+          emptyDir: {}

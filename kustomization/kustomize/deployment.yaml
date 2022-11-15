@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: echoserver
+  labels:
+    app: echoserver
+spec:
+  selector:
+    matchLabels:
+      app: echoserver
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: echoserver
+    spec:
+      volumes: # Create the shared volume
+      - name: interceptors
+        emptyDir: {}
+      - name: exporters
+        emptyDir: {}
+      containers:
+      - name: echoserver
+        image: registry.k8s.io/echoserver:1.4
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: "250m"
+          requests:
+            memory: 128Mi
+            cpu: "80m"
+        volumeMounts:
+          - mountPath: /interceptors
+            name: interceptors
+          - mountPath: /exporters
+            name: exporters
+      initContainers: # init container adding the file to the shared volume
+      - name: init-interceptors
+        image: alpine
+        volumeMounts:
+          - mountPath: /interceptors
+            name: interceptors
+      - name: init-exporters
+        image: busybox
+        command: ['/bin/sh', '-c']
+        args: ['wget --no-check-certificate https://repo1.maven.org/maven2/io/zeebe/hazelcast/zeebe-hazelcast-exporter/1.2.1/zeebe-hazelcast-exporter-1.2.1-jar-with-dependencies.jar -O /exporters/zeebe-hazelcast-exporter.jar']
+        volumeMounts:
+        - mountPath: /exporters
+          name: exporters
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echoserver-service
+spec:
+  selector:
+    app: echoserver
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: LoadBalancer
