@@ -2,22 +2,28 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: echo-server
-  namespace: camunda
   annotations:
-    # ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    # nginx.ingress.kubernetes.io/rewrite-target: /$2
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/auth-url: "https://$host/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://$host/oauth2/start?rd=$escaped_request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "x-auth-request-user, x-auth-request-email"
   labels:
     app.kubernetes.io/name: echo-server
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+      - alpha.southeastasia.cloudapp.azure.com
+      secretName: tls-secret
   rules:
-    - host: bingo.southeastasia.cloudapp.azure.com
-      http:
-        paths:
-          - path: /secure
-            pathType: Prefix
-            backend:
-              service:
-                name: echoserver-service
-                port:
-                  number: 8080
+  - host: alpha.southeastasia.cloudapp.azure.com
+    http:
+      paths:
+        - path: /echo
+          pathType: Prefix
+          backend:
+            service:
+              name: echoserver-service
+              port:
+                number: 8080

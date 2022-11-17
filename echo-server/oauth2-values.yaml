@@ -1,0 +1,27 @@
+# https://github.com/oauth2-proxy/oauth2-proxy/blob/7c3efe4f42bc37ccab613fe5002c172e147e3195/docs/2_auth.md#keycloak-auth-provider
+extraArgs:
+  - --provider=keycloak
+  - --set-xauthrequest=true
+  - --provider-display-name="Echo Login"
+  - --client-id=nginx
+  - --client-secret="rivnAokYs0riGJkvXDkd9qniutQbIxJ7"
+  - --login-url=https://alpha.southeastasia.cloudapp.azure.com/auth/realms/camunda-platform/protocol/openid-connect/auth
+  - --redeem-url=https://alpha.southeastasia.cloudapp.azure.com/auth/realms/camunda-platform/protocol/openid-connect/token
+  - --validate-url=https://alpha.southeastasia.cloudapp.azure.com/auth/realms/camunda-platform/protocol/openid-connect/userinfo
+  - --keycloak-group=users
+
+replicaCount: 1
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: oauth2-proxy
+        topologyKey: "kubernetes.io/hostname"
+resources:
+  limits:
+    cpu: 200m
+    memory: 100Mi
+  requests:
+    cpu: 100m
+    memory: 25Mi
