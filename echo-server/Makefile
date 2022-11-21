@@ -2,21 +2,30 @@ namespace ?= echo
 
 #k -n echo annotate ingress echo-server cert-manager.io/cluster-issuer=letsencrypt
 
+.PHONY: all
+all: echo oauth2-proxy
+
+.PHONY: namespace
+namespace:
+	kubectl create namespace $(namespace)
+
 .PHONY: echo
 echo:
-	kubectl create namespace $(namespace)
 	kubectl apply -f deployment.yaml -n $(namespace)
 	kubectl apply -f ingress.yaml -n $(namespace)
 
 .PHONY: clean-echo
 clean-echo:
-	kubectl delete - deployment.yaml -n $(namespace)
-	kubectl delete - ingress.yaml -n $(namespace)
+	kubectl delete -f deployment.yaml -n $(namespace)
+	kubectl delete -f ingress.yaml -n $(namespace)
 
 .PHONY: logs-nginx
 logs-nginx:
 	kubectl logs -n ingress-nginx -l app.kubernetes.io/name=ingress-nginx -f
 
+.PHONY: logs-oauth2
+logs-oauth2:
+	kubectl logs -n ingress-nginx -l app.kubernetes.io/name=oauth2-proxy -f
 
 .PHONY: oauth2-proxy
 oauth2-proxy:
@@ -29,7 +38,11 @@ oauth2-proxy:
 
 .PHONY: update-oauth2
 update-oauth2:
-helm upgrade oauth2-proxy azure-marketplace/oauth2-proxy -f oauth2-values.yaml -n ingress-nginx
+	helm upgrade oauth2-proxy azure-marketplace/oauth2-proxy -f oauth2-values.yaml -n ingress-nginx
+
+.PHONY: clean-oauth2
+clean-oauth2:
+	helm delete oauth2-proxy -n ingress-nginx
 
 .PHONY: ingress-nginx
 ingress-nginx:

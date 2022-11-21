@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: alpha.southeastasia.cloudapp.azure.com
+  - host: monday.southeastasia.cloudapp.azure.com
     http:
       paths:
       - backend:
@@ -20,5 +20,5 @@ spec:
         pathType: Prefix
   tls:
   - hosts:
-    - alpha.southeastasia.cloudapp.azure.com
+    - monday.southeastasia.cloudapp.azure.com
     secretName: tls-secret
